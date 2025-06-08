@@ -4,7 +4,7 @@ Visualise groups given by generators and relation in your browser!
 
 This project was put together in an afternoon by porting my Todd-Coxeter python code into javascript, and stitching things together with Vue.js. It was meant as a demo, but perhaps I will revisit it and add more features in the future.
 
-## [Demo](https://grgre.github.io/grouplab/)
+**[Demo](https://grge.github.io/grouplab/)**
 
 ## Things:
 * The graph currently pauses at about 100 nodes, and you can incrementally increase the limit by hitting the pause button.
