@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
 import ShreierGraph from '@/components/ShreierGraph.vue'
 import PresentationSelector from '@/components/PresentationSelector.vue'
 import StatusBar from '@/components/StatusBar.vue'
