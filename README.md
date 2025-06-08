@@ -1,6 +1,6 @@
 # grouplab
 
-Visualise groups given by generators and relation in your browser!
+Visualise groups given by generators and relations in your browser!
 
 This project was put together in an afternoon by porting my Todd-Coxeter python code into javascript, and stitching things together with Vue.js. It was meant as a demo, but perhaps I will revisit it and add more features in the future.
 
