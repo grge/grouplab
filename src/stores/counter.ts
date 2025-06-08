@@ -52,7 +52,6 @@ export const useGroup = defineStore('group', () => {
         nodeLimit: nodeBudget
       })
       worker.onmessage = ({ data }) => {
-        console.log('Worker message:', data)
         if ('workerState' in data) {
           workerState.value = data.workerState
           return

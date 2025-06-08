@@ -22,10 +22,10 @@ type OutgoingMessage =
 
 let builder: GraphBuilder | null = null
 let intervalId: number | null = null;
-let nodeLimit = 0
+let nodeLimit = 100
 
-const STEP_BATCH = 10; // steps per tick
-const POST_EVERY = 100; // ms throttle for postMessage
+const STEP_BATCH = 20; // steps per tick
+const POST_EVERY = 10; // ms throttle for postMessage
 let lastPost = 0;
 
 /* -------------- helper functions -------------- */
@@ -54,14 +54,16 @@ function tick() {
   const now = performance.now()
   const state = builder.exportState()
   const completed = builder.unfinished.length === 0;
-  const paused = (!completed) && builder.outEdges.size >= nodeLimit;
+  const paused = (!completed) && builder.outEdges.size >= 300
 
   if (completed || paused || now - lastPost > POST_EVERY) {
     post({ state, completed, paused, err: null })
     lastPost = now
   }
 
-  if (completed || paused) cleanup('idle')
+  if (completed || paused) {
+    cleanup('idle')
+  }
 }
 
 function cleanup(nextState: 'idle' | 'running' = 'idle') {

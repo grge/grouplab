@@ -25,12 +25,12 @@ self.onmessage = ({data}) => {
 
   layout = createLayout(graph, {
     dimensions: 2,
-    springLength: 2,
-    springCoefficient: 2.5,
+    springLength: 4,
+    springCoefficient: 2,
     dragCoefficient: 1,
     theta: 0,
-    gravity: -12,
-    timeStep: 0.5
+    gravity: -11,
+    timeStep: 0.4
   })
 
   for (const id in positions) {
