@@ -9,7 +9,6 @@ This project was put together in an afternoon by porting my Todd-Coxeter python 
 ## Things:
 * The graph currently pauses at about 100 nodes, and you can incrementally increase the limit by hitting the pause button.
 * The presentation only works for relators currently.
-* The graph layout turns out to be the slowest part of the app, and I haven't put it in a web worker yet sorry.
 * All the code is there to do coset enumeration for a subgroup given by generators. I just need to add UI.
 * After that, some other features I would like to add are:
   * A nice parser for better relation input, including proper relations, powers, commutators.
