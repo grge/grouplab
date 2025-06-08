@@ -6,8 +6,9 @@ import type { GraphState } from '@/utils/core'
 
 
 export const useGroup = defineStore('group', () => {
-  const generators = ref<string[]>(["a", "b"])
-  const relations = ref<string[]>(['aaa', 'bb', 'abababab'])
+  const generators = ref<string[]>([])
+  const relations = ref<string[]>([])
+
   const group = computed(() => {
     return new PresentationGroup({
       generators: generators.value,

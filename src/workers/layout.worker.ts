@@ -24,7 +24,7 @@ self.onmessage = ({data}) => {
   links.forEach(link => graph.addLink(link.source, link.target))
 
   layout = createLayout(graph, {
-    dimensions: 2,
+    dimensions: 3,
     springLength: 4,
     springCoefficient: 2,
     dragCoefficient: 1,
