@@ -86,8 +86,12 @@
 
 /****** editable text ******/
 .editable {
+  display: inline-block;
   cursor: pointer;
   transition: color 0.2s ease, text-shadow 0.2s ease;
+  min-height: 2rem;
+  min-width: 2rem;
+
 }
 .editable:hover {
   color: #38bdf8;               /* brighten on hover */
