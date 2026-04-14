@@ -1,6 +1,6 @@
-import { PresentationGroup, GraphBuilder } from '@/utils/core'
-import type { Relation, GraphState } from '@/utils/core'
-import type { GraphViewState } from '@/groups/types'
+import { PresentationGroup, type Relation } from '@/groups/presentation'
+import { GraphBuilder } from '@/groups/engine'
+import type { GraphState, GraphViewState } from '@/groups/types'
 
 type StartMessage = {
   action: 'start'

@@ -1,9 +1,8 @@
 import { ref, computed, toRaw } from 'vue'
 import { defineStore } from 'pinia'
 
-import { PresentationGroup } from '@/utils/core'
-import type { GraphState } from '@/utils/core'
-import type { GraphViewState } from '@/groups/types'
+import { PresentationGroup } from '@/groups/presentation'
+import type { GraphState, GraphViewState } from '@/groups/types'
 
 export const useGroup = defineStore('group', () => {
   const generators = ref<string[]>([])

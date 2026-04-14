@@ -4,7 +4,7 @@ import PresentationSelector from '@/components/PresentationSelector.vue'
 import StatusBar from '@/components/StatusBar.vue'
 
 import { useGroup } from '@/stores/group'
-import { PresentationGroup } from '@/utils/core'
+import { PresentationGroup } from '@/groups/presentation'
 import { encodePres, decodePres } from '@/utils/share'
 import { watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
