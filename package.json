@@ -7,11 +7,9 @@
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
-    "build-only": "vite build",
+    "build-only": "vite build && cp dist/index.html dist/404.html",
     "type-check": "vue-tsc --build",
-    "lint": "eslint . --fix",
-    "predeploy": "vite build && cp dist/index.html dist/404.html",
-    "deploy": "gh-pages -d dist"
+    "lint": "eslint . --fix"
   },
   "dependencies": {
     "ngraph.forcelayout": "^3.3.1",
@@ -28,7 +26,6 @@
     "@vue/tsconfig": "^0.7.0",
     "eslint": "^9.22.0",
     "eslint-plugin-vue": "~10.0.0",
-    "gh-pages": "^6.3.0",
     "jiti": "^2.4.2",
     "npm-run-all2": "^7.0.2",
     "typescript": "~5.8.0",

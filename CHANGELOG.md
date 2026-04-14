@@ -13,6 +13,7 @@ but this project uses date-based entries rather than semantic-versioned releases
 - Added `src/stores/group.ts` as the renamed and cleaned-up Pinia store module.
 - Added `src/components/SchreierGraph.vue` as the corrected component name replacing the misspelled `ShreierGraph.vue`.
 - Added `src/env.d.ts` to provide Vite client and web worker TypeScript environment definitions.
+- Added GitHub Actions workflows for CI and GitHub Pages deployment.
 
 ### Changed
 - Reworked `App.vue` into a router shell that renders the active route view rather than mixing shell and page concerns.
@@ -21,7 +22,8 @@ but this project uses date-based entries rather than semantic-versioned releases
 - Renamed `src/components/ShreierGraph.vue` to `src/components/SchreierGraph.vue`.
 - Tightened worker typings and message handling in `builder.worker.ts` and `layout.worker.ts` so local typechecking and production builds pass cleanly.
 - Updated Vite configuration to use a cleaner mode-based `base` setting for production builds.
-- Removed unused framework/dependency scaffolding from `package.json` by dropping `elkjs` and `tailwindcss`.
+- Switched deployment from the old `gh-pages` branch workflow to GitHub Actions-based Pages deployment.
+- Removed unused framework/dependency scaffolding from `package.json` by dropping `elkjs`, `tailwindcss`, and the old `gh-pages` CLI deploy path.
 
 ### Fixed
 - Fixed the subgroup initialisation loop in `src/utils/core.ts` by iterating over subgroup generator values rather than array indices.
