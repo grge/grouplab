@@ -1,3 +1,9 @@
+import {
+  parseGeneratorListString,
+  parsePresentationString,
+  parseRelationListString,
+} from '@/groups/parser'
+
 export type Relation = string | [string, string]
 
 export interface PresentOpts {
@@ -27,6 +33,21 @@ export class PresentationGroup {
               throw new Error('Bad relation')
             })(),
     )
+  }
+
+  static fromFields(generatorInput: string, relationInput: string): PresentationGroup {
+    return new PresentationGroup({
+      generators: parseGeneratorListString(generatorInput),
+      relations: parseRelationListString(relationInput),
+    })
+  }
+
+  static fromString(input: string): PresentationGroup {
+    const parsed = parsePresentationString(input)
+    return new PresentationGroup({
+      generators: parsed.generators,
+      relations: parsed.relators,
+    })
   }
 
   get relators(): string[] {

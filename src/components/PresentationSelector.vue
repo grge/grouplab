@@ -1,6 +1,7 @@
 <script lang="ts" setup>
   import { ref, nextTick } from 'vue';
   import { useGroup } from '@/stores/group';
+  import { parseGeneratorListString, parseRelationListString } from '@/groups/parser';
 
   const groupStore = useGroup();
 
@@ -9,21 +10,25 @@
 
   function startEdit(which: 'gens' | 'rels') {
     editing.value = which;
-    tempInput.value = (which === 'gens'
-      ? groupStore.generators
-      : groupStore.relations
-    ).join(',')
+    tempInput.value = which === 'gens'
+      ? groupStore.generatorInput
+      : groupStore.relationInput
     nextTick(() => (document.getElementById('edit-field') as HTMLInputElement)?.focus());
   }
 
   function commit() {
-    const list = tempInput.value.split(',').map(s => s.trim()).filter(s => s);
-    if (editing.value === 'gens') {
-      groupStore.generators = list;
-    } else if (editing.value === 'rels') {
-      groupStore.relations = list;
+    try {
+      if (editing.value === 'gens') {
+        groupStore.generators = parseGeneratorListString(tempInput.value);
+        groupStore.generatorInput = tempInput.value;
+      } else if (editing.value === 'rels') {
+        groupStore.relations = parseRelationListString(tempInput.value);
+        groupStore.relationInput = tempInput.value;
+      }
+      editing.value = null;
+    } catch (err) {
+      console.error(err);
     }
-    editing.value = null;
   }
 
   function cancel() { editing.value = null; }
@@ -39,18 +44,18 @@
     </template>
     <template v-else>
       <span class="editable" @click="startEdit('gens')">
-        {{ groupStore.generators.join(', ') }}
+        {{ groupStore.generatorInput || groupStore.generators.join(', ') }}
       </span>
     </template>
     <span class="bracket">|</span>
     <template v-if="editing === 'rels'">
       <input id="edit-field" type="text" class="edit-input"
-             placeholder="Relators (e.g., aaa, bbb, abAB)"
+             placeholder="Relations (e.g., a^2, b^3, (ab)^5, [a,b])"
              v-model="tempInput" @keyup.enter="commit" @keyup.esc="cancel">
     </template>
     <template v-else>
       <span class="editable" @click="startEdit('rels')">
-        {{ groupStore.relations.join(', ') }}
+        {{ groupStore.relationInput || groupStore.relations.join(', ') }}
       </span>
     </template>
     <span class="bracket">&gt;</span>

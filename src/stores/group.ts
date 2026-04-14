@@ -7,6 +7,8 @@ import type { GraphState, GraphViewState } from '@/groups/types'
 export const useGroup = defineStore('group', () => {
   const generators = ref<string[]>([])
   const relations = ref<string[]>([])
+  const generatorInput = ref('')
+  const relationInput = ref('')
 
   const group = computed(() => {
     return new PresentationGroup({
@@ -15,9 +17,11 @@ export const useGroup = defineStore('group', () => {
     })
   })
 
-  function setGroup(newGenerators: string[], newRelations: string[]) {
+  function setGroup(newGenerators: string[], newRelations: string[], newGeneratorInput?: string, newRelationInput?: string) {
     generators.value = newGenerators
     relations.value = newRelations
+    generatorInput.value = newGeneratorInput ?? newGenerators.join(', ')
+    relationInput.value = newRelationInput ?? newRelations.join(', ')
   }
 
   const subgroupGenerators = ref<string[]>([])
@@ -79,6 +83,8 @@ export const useGroup = defineStore('group', () => {
     group,
     generators,
     relations,
+    generatorInput,
+    relationInput,
     setGroup,
     isComplete,
     order,

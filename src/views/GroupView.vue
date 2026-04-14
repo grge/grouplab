@@ -5,6 +5,7 @@ import StatusBar from '@/components/StatusBar.vue'
 
 import { useGroup } from '@/stores/group'
 import { PresentationGroup } from '@/groups/presentation'
+import { parseGeneratorListString, parseRelationListString } from '@/groups/parser'
 import { encodePres, decodePres } from '@/utils/share'
 import { watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -16,8 +17,9 @@ const route = useRoute()
 function applyUrlPres(urlPres: string) {
   const pj = decodePres(urlPres)
   if (pj) {
-    store.generators = pj.g
-    store.relations = pj.r
+    const generators = parseGeneratorListString(pj.g)
+    const relations = parseRelationListString(pj.r)
+    store.setGroup(generators, relations, pj.g, pj.r)
   }
 }
 
@@ -46,7 +48,7 @@ watch(
 watch(
   () => [store.generators, store.relations],
   () => {
-    const pres = encodePres({ g: store.generators, r: store.relations })
+    const pres = encodePres({ g: store.generatorInput, r: store.relationInput })
     router.replace({ name: 'group', params: { pres } })
   },
   { deep: true },
