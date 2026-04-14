@@ -1,22 +1,11 @@
 <script setup lang="ts">
-/*
-  Incremental force‑layout visualiser using ngraph.forcelayout.
-  ───────────────────────────────────────────────────────────
-  • Layout runs in Web‑Worker `layout.worker.ts` to keep UI fluid.
-  • Existing positions are reused when nodes are added.
-  • Worker emits coordinates every N steps (default 1) – creates a
-    smooth animation.
-  • Smart params: more gravity & higher dims when graph is small;
-    cooled / lighter when graph grows.
-*/
-
 import { ref, watch, computed } from 'vue'
-import { useGroup }            from '@/stores/group'
+import { useGroup } from '@/stores/group'
 
 const store = useGroup()
-const pos   = ref<Record<string, { x: number; y: number }>>({})
+const pos = ref<Record<string, { x: number; y: number }>>({})
 
-let layoutWorker : Worker | null = spawnWorker()
+let layoutWorker: Worker | null = spawnWorker()
 
 function spawnWorker() {
   const worker = new Worker(new URL('@/workers/layout.worker.ts', import.meta.url), { type: 'module' })
@@ -29,48 +18,50 @@ function spawnWorker() {
 const signature = () => JSON.stringify({ gens: store.generators, rels: store.relations })
 let lastSig = signature()
 
-watch(() => store.builderState, (state) => {
-  if (!state) return
+watch(
+  () => store.graphView,
+  (view) => {
+    if (!view) return
 
-  const sig = signature()
-  if (sig !== lastSig) {
-    lastSig = sig
-    layoutWorker?.terminate()
-    layoutWorker = spawnWorker()
-  }
+    const sig = signature()
+    if (sig !== lastSig) {
+      lastSig = sig
+      layoutWorker?.terminate()
+      layoutWorker = spawnWorker()
+    }
 
-  // build lightweight clone‑safe arrays
-  const nodes = state.outEdges.map(([id]) => ({ id }))
-  const links = state.outEdges.flatMap(([src, bases]) =>
-    Object.values(bases).map(tgt => ({ source: src, target: tgt }))
-  )
+    layoutWorker?.postMessage({
+      nodes: view.nodes.map((node) => ({ id: String(node.id) })),
+      links: view.links.map((link) => ({
+        source: String(link.source),
+        target: String(link.target),
+      })),
+      complete: store.isComplete,
+      stepsPerFrame: 10,
+    })
+  },
+  { immediate: true },
+)
 
-  layoutWorker?.postMessage({
-    nodes,
-    links,
-    complete : store.isComplete,
-    stepsPerFrame: 10,
-  })
-}, { immediate: true })
-
-/* ───── reactive helpers for viewBox ───── */
 const padding = 2
 const bbox = computed(() => {
   const pts = Object.values(pos.value)
 
   if (!store.isComplete) {
     const id = pts[0]
-    const dim = pts.length/4
+    const dim = pts.length / 4
     return {
-      x: id?.x - dim/2,
-      y: id?.y - dim/2,
+      x: (id?.x ?? 0) - dim / 2,
+      y: (id?.y ?? 0) - dim / 2,
       h: dim,
       w: dim,
-
     }
   }
   if (!pts.length) return { x: 0, y: 0, w: 100, h: 100 }
-  let minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity
+  let minX = Infinity
+  let minY = Infinity
+  let maxX = -Infinity
+  let maxY = -Infinity
   for (const p of pts) {
     if (p.x < minX) minX = p.x
     if (p.x > maxX) maxX = p.x
@@ -80,24 +71,33 @@ const bbox = computed(() => {
   return {
     x: minX - padding,
     y: minY - padding,
-    w: maxX - minX + padding*2,
-    h: maxY - minY + padding*2,
+    w: maxX - minX + padding * 2,
+    h: maxY - minY + padding * 2,
   }
 })
-const viewBox = computed(() => `${bbox.value.x} ${bbox.value.y} ${bbox.value.w} ${bbox.value.h}`)
 
-const edges = computed(() => store.builderState?.outEdges.flatMap(([src,map]) =>
-  Object.keys(map).map((gen) => ({ id:`${src}->${gen}`, src, tgt:map[gen], gen:gen }))
-))
-const nodes = computed(() => store.builderState?.outEdges.map(([id]) => ({ id })))
+const viewBox = computed(() => `${bbox.value.x} ${bbox.value.y} ${bbox.value.w} ${bbox.value.h}`)
+const edges = computed(() =>
+  (store.graphView?.links ?? []).map((edge) => ({
+    id: `${edge.source}->${edge.generator}->${edge.target}`,
+    src: edge.source,
+    tgt: edge.target,
+    gen: edge.generator,
+  })),
+)
+const nodes = computed(() => store.graphView?.nodes ?? [])
 </script>
 
 <template>
   <svg class="shreier-graph" :viewBox="viewBox" xmlns="http://www.w3.org/2000/svg">
     <g v-for="edge in edges" :key="edge.id">
-      <line :x1="pos[edge.src]?.x || 0" :y1="pos[edge.src]?.y || 0"
-            :x2="pos[edge.tgt]?.x || 0" :y2="pos[edge.tgt]?.y || 0"
-            :class="edge.gen"/>
+      <line
+        :x1="pos[edge.src]?.x || 0"
+        :y1="pos[edge.src]?.y || 0"
+        :x2="pos[edge.tgt]?.x || 0"
+        :y2="pos[edge.tgt]?.y || 0"
+        :class="edge.gen"
+      />
     </g>
     <g v-for="node in nodes" :key="node.id">
       <circle :cx="pos[node.id]?.x || 0" :cy="pos[node.id]?.y || 0" r="0.6" />

@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "build-only": "vite build && cp dist/index.html dist/404.html",
     "type-check": "vue-tsc --build",
-    "lint": "eslint . --fix"
+    "lint": "eslint . --fix",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "ngraph.forcelayout": "^3.3.1",
@@ -31,6 +33,7 @@
     "typescript": "~5.8.0",
     "vite": "^6.2.4",
     "vite-plugin-vue-devtools": "^7.7.2",
+    "vitest": "^3.2.4",
     "vue-tsc": "^2.2.8"
   }
 }

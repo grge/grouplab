@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 
 import { PresentationGroup } from '@/utils/core'
 import type { GraphState } from '@/utils/core'
-
+import type { GraphViewState } from '@/groups/types'
 
 export const useGroup = defineStore('group', () => {
   const generators = ref<string[]>([])
@@ -12,7 +12,7 @@ export const useGroup = defineStore('group', () => {
   const group = computed(() => {
     return new PresentationGroup({
       generators: generators.value,
-      relations: relations.value
+      relations: relations.value,
     })
   })
 
@@ -23,25 +23,24 @@ export const useGroup = defineStore('group', () => {
 
   const subgroupGenerators = ref<string[]>([])
   const builderState = ref<GraphState | null>(null)
+  const graphView = ref<GraphViewState | null>(null)
   const isComplete = ref(false)
   const isPaused = ref(false)
   const error = ref<string | null>(null)
   const workerState = ref<'idle' | 'running' | 'stopped'>('idle')
 
-  const order = computed(() =>
-    builderState.value ? builderState.value.outEdges.length : 0
-  )
+  const order = computed(() => graphView.value?.order ?? 0)
 
-  let worker : Worker | null = null
+  let worker: Worker | null = null
 
   async function runBuilder(nodeBudget = 100) {
-    stopWorker() // ensure no previous worker is running
+    stopWorker()
     isComplete.value = false
     isPaused.value = false
     try {
       const rawGroup = group.value
-         ? { generators: group.value.generators, relations: group.value.relations }
-         : null;
+        ? { generators: group.value.generators, relations: group.value.relations }
+        : null
 
       worker = new Worker(new URL('@/workers/builder.worker.ts', import.meta.url), { type: 'module' })
       worker.postMessage({
@@ -50,15 +49,16 @@ export const useGroup = defineStore('group', () => {
         relations: toRaw(rawGroup?.relations) || [],
         subgroupGenerators: toRaw(subgroupGenerators.value),
         savedState: toRaw(builderState.value),
-        nodeLimit: nodeBudget
+        nodeLimit: nodeBudget,
       })
       worker.onmessage = ({ data }) => {
         if ('workerState' in data) {
           workerState.value = data.workerState
           return
         }
-        const { state, completed, paused, err } = data
+        const { state, view, completed, paused, err } = data
         builderState.value = state
+        graphView.value = view
         isComplete.value = completed
         isPaused.value = paused
         error.value = err || null
@@ -76,5 +76,19 @@ export const useGroup = defineStore('group', () => {
     }
   }
 
-  return { group, generators, relations, setGroup, isComplete, order, isPaused, builderState, error, workerState, runBuilder, stopWorker }
+  return {
+    group,
+    generators,
+    relations,
+    setGroup,
+    isComplete,
+    order,
+    isPaused,
+    builderState,
+    graphView,
+    error,
+    workerState,
+    runBuilder,
+    stopWorker,
+  }
 })

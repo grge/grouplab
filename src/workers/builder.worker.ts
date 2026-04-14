@@ -1,5 +1,6 @@
 import { PresentationGroup, GraphBuilder } from '@/utils/core'
 import type { Relation, GraphState } from '@/utils/core'
+import type { GraphViewState } from '@/groups/types'
 
 type StartMessage = {
   action: 'start'
@@ -15,6 +16,7 @@ type IncomingMessage = StartMessage | StopMessage
 
 type BuilderUpdateMessage = {
   state: GraphState
+  view: GraphViewState
   completed: boolean
   paused: boolean
   err: string | null
@@ -48,6 +50,25 @@ function setWorkerState(state: 'idle' | 'running' | 'stopped') {
   post({ workerState: state })
 }
 
+function emptyState(generators: string[]): GraphState {
+  return {
+    generators,
+    nodeCount: 0,
+    nodeQueue: [],
+    canonicalNames: [],
+    out: Object.fromEntries(generators.map((g) => [g, []])),
+    in: Object.fromEntries(generators.map((g) => [g, []])),
+  }
+}
+
+function emptyView(): GraphViewState {
+  return {
+    nodes: [],
+    links: [],
+    order: 0,
+  }
+}
+
 function tick() {
   if (!builder) return
 
@@ -58,11 +79,12 @@ function tick() {
 
   const now = performance.now()
   const state = builder.exportState()
+  const view = builder.exportView()
   const completed = builder.isFinished
-  const paused = !completed && builder.outEdges.size >= nodeLimit
+  const paused = !completed && view.nodes.length >= nodeLimit
 
   if (completed || paused || now - lastPost > POST_EVERY) {
-    post({ state, completed, paused, err: null })
+    post({ state, view, completed, paused, err: null })
     lastPost = now
   }
 
@@ -97,7 +119,8 @@ workerScope.addEventListener('message', (e: MessageEvent<IncomingMessage>) => {
     intervalId = self.setInterval(tick, 0)
   } catch (err) {
     post({
-      state: msg.savedState ?? { inEdges: [], outEdges: [], unfinished: [] },
+      state: msg.savedState ?? emptyState(msg.generators),
+      view: emptyView(),
       completed: false,
       paused: false,
       err: err instanceof Error ? err.message : String(err),
