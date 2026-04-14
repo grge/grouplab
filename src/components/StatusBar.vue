@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useGroup } from '@/stores/counter'
+import { useGroup } from '@/stores/group'
 
 const groupStore = useGroup()
 
@@ -12,14 +12,6 @@ const status = computed(() => {
   if (groupStore.workerState === 'running') return 'building'
   return 'idle'
 })
-
-const statusLabel = computed(() => ({
-  building : 'Building…',
-  paused   : 'Paused – click to resume',
-  done     : 'Done',
-  error    : 'Error',
-  idle     : 'Idle',
-}[status.value]))
 
 function resume() {
   if (status.value !== 'paused') return

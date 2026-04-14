@@ -9,7 +9,7 @@ export function encodePres(pres: PresJSON): string {
   return `${g}_${r}`
 }
 
-export function decodePres(str: string): PresJSON {
+export function decodePres(str: string): PresJSON | null {
   const [gPart, rPart] = str.split('_')
   if (!gPart) { return null }
   return {

@@ -1,10 +1,10 @@
 <script lang="ts" setup>
   import { ref, nextTick } from 'vue';
-  import { useGroup } from '@/stores/counter';
+  import { useGroup } from '@/stores/group';
 
   const groupStore = useGroup();
 
-  const editing = ref<'gens' | 'rels'>(null)
+  const editing = ref<'gens' | 'rels' | null>(null)
   const tempInput = ref('');
 
   function startEdit(which: 'gens' | 'rels') {

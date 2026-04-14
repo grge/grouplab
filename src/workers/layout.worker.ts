@@ -1,10 +1,21 @@
 import createLayout from 'ngraph.forcelayout'
 import createGraph from 'ngraph.graph'
 
-let layout: ReturnType<typeof createLayout> | null = null
-let graph: ReturnType<typeof ngraph> | null = null
+type LayoutNode = { id: string }
+type LayoutLink = { source: string; target: string }
+type LayoutMessage = {
+  nodes: LayoutNode[]
+  links: LayoutLink[]
+  complete?: boolean
+  stepsPerFrame?: number
+}
+
+type PositionMap = Record<string, { x: number; y: number }>
+
+const workerScope: Worker = self as unknown as Worker
+
 let timeoutId: ReturnType<typeof setTimeout> | null = null
-let positions: Record<string, { x: number; y: number }> = {}
+let positions: PositionMap = {}
 
 function stopLoop() {
   if (timeoutId !== null) {
@@ -13,24 +24,23 @@ function stopLoop() {
   }
 }
 
-self.onmessage = ({data}) => {
-  const { nodes, links, complete, stepsPerFrame } = data
+workerScope.onmessage = ({ data }: MessageEvent<LayoutMessage>) => {
+  const { nodes, links, stepsPerFrame = 5 } = data
   stopLoop()
 
-  graph = createGraph()
-  let totalSteps = 0
+  const graph = createGraph()
 
-  nodes.forEach(node => graph.addNode(node.id, node))
-  links.forEach(link => graph.addLink(link.source, link.target))
+  nodes.forEach((node) => graph.addNode(node.id, node))
+  links.forEach((link) => graph.addLink(link.source, link.target))
 
-  layout = createLayout(graph, {
+  const layout = createLayout(graph, {
     dimensions: 4,
     springLength: 4,
     springCoefficient: 2,
     dragCoefficient: 1,
     theta: 0,
     gravity: -11,
-    timeStep: 0.4
+    timeStep: 0.4,
   })
 
   for (const id in positions) {
@@ -43,18 +53,20 @@ self.onmessage = ({data}) => {
   }
 
   function tick() {
-    // update the physics rules
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < stepsPerFrame; i++) {
       layout.step()
-      totalSteps++
     }
+
     positions = {}
-    graph!.forEachNode((node) => {
-      const p = layout.getNodePosition(node.id)
-      positions[node.id] = { x: p.x, y: p.y }
+    graph.forEachNode((node) => {
+      const id = String(node.id)
+      const p = layout.getNodePosition(id)
+      positions[id] = { x: p.x, y: p.y }
     })
-    self.postMessage({ positions })
-    setTimeout(tick, 16)
+
+    workerScope.postMessage({ positions })
+    timeoutId = setTimeout(tick, 16)
   }
+
   tick()
 }

@@ -11,7 +11,7 @@
 */
 
 import { ref, watch, computed } from 'vue'
-import { useGroup }            from '@/stores/counter'
+import { useGroup }            from '@/stores/group'
 
 const store = useGroup()
 const pos   = ref<Record<string, { x: number; y: number }>>({})
@@ -45,7 +45,7 @@ watch(() => store.builderState, (state) => {
     Object.values(bases).map(tgt => ({ source: src, target: tgt }))
   )
 
-  layoutWorker.postMessage({
+  layoutWorker?.postMessage({
     nodes,
     links,
     complete : store.isComplete,

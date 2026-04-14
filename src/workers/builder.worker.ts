@@ -1,60 +1,65 @@
-import { PresentationGroup, GraphBuilder } from '@/utils/core';
-import type { Relation, GraphState } from '@/utils/core';
-
-declare const self: DedicatedWorkerGlobalScope // TS hint
+import { PresentationGroup, GraphBuilder } from '@/utils/core'
+import type { Relation, GraphState } from '@/utils/core'
 
 type StartMessage = {
-  action: 'start',
-  generators: string[],
-  relations: Relation[],
-  subgroupGenerators: string[],
-  savedState?: GraphState,
+  action: 'start'
+  generators: string[]
+  relations: Relation[]
+  subgroupGenerators: string[]
+  savedState?: GraphState
   nodeLimit: number
 }
+
 type StopMessage = { action: 'stop' }
 type IncomingMessage = StartMessage | StopMessage
 
-type OutgoingMessage =
-| { state: GraphState, completed: boolean, paused: boolean, err: null }
-  { workerState: 'idle' | 'running' | 'stopped' }
-
-/* -------------- global state -------------- */
-
-let builder: GraphBuilder | null = null
-let intervalId: number | null = null;
-let nodeLimit = 100
-
-const STEP_BATCH = 20; // steps per tick
-const POST_EVERY = 10; // ms throttle for postMessage
-let lastPost = 0;
-
-/* -------------- helper functions -------------- */
-
-function reviveGroup(generators, relations) {
-  return new PresentationGroup({
-    generators: generators as string[],
-    relations: relations as Relation[],
-  });
+type BuilderUpdateMessage = {
+  state: GraphState
+  completed: boolean
+  paused: boolean
+  err: string | null
 }
 
-function post(o : OutgoingMessage) {
-  self.postMessage(o);
+type WorkerStateMessage = {
+  workerState: 'idle' | 'running' | 'stopped'
+}
+
+type OutgoingMessage = BuilderUpdateMessage | WorkerStateMessage
+
+const workerScope: Worker = self as unknown as Worker
+
+let builder: GraphBuilder | null = null
+let intervalId: number | null = null
+let nodeLimit = 100
+
+const STEP_BATCH = 20
+const POST_EVERY = 10
+let lastPost = 0
+
+function reviveGroup(generators: string[], relations: Relation[]): PresentationGroup {
+  return new PresentationGroup({ generators, relations })
+}
+
+function post(message: OutgoingMessage) {
+  workerScope.postMessage(message)
 }
 
 function setWorkerState(state: 'idle' | 'running' | 'stopped') {
-  post({ workerState: state });
+  post({ workerState: state })
 }
 
-/* -------------- ticking loop -------------- */
-
 function tick() {
-  if (!builder) return;
+  if (!builder) return
+
   let steps = 0
-  while (steps < STEP_BATCH && builder.step()) { steps++; }
+  while (steps < STEP_BATCH && builder.step()) {
+    steps++
+  }
+
   const now = performance.now()
   const state = builder.exportState()
-  const completed = builder.unfinished.length === 0;
-  const paused = (!completed) && builder.outEdges.size >= 300
+  const completed = builder.isFinished
+  const paused = !completed && builder.outEdges.size >= nodeLimit
 
   if (completed || paused || now - lastPost > POST_EVERY) {
     post({ state, completed, paused, err: null })
@@ -66,34 +71,37 @@ function tick() {
   }
 }
 
-function cleanup(nextState: 'idle' | 'running' = 'idle') {
+function cleanup(nextState: 'idle' | 'running' | 'stopped' = 'idle') {
   if (intervalId !== null) {
-    clearInterval(intervalId);
-    intervalId = null;
+    clearInterval(intervalId)
+    intervalId = null
   }
-  setWorkerState(nextState);
+  setWorkerState(nextState)
 }
 
-/* -------------- message handling -------------- */
-
-self.addEventListener('message', (e: MessageEvent<IncomingMessage>) => {
-  const msg = e.data;
+workerScope.addEventListener('message', (e: MessageEvent<IncomingMessage>) => {
+  const msg = e.data
 
   if (msg.action === 'stop') {
     cleanup('idle')
-    builder = null;
+    builder = null
     return
   }
 
   try {
-    const pg = reviveGroup(msg.generators, msg.relations);
-    builder = new GraphBuilder(pg, msg.subgroupGenerators, msg.savedState);
-    nodeLimit += msg.nodeLimit || 100;
-    lastPost = performance.now();
-    cleanup('running');
-    intervalId = setInterval(tick, 0); // start ticking
+    const pg = reviveGroup(msg.generators, msg.relations)
+    builder = new GraphBuilder(pg, msg.subgroupGenerators, msg.savedState)
+    nodeLimit = msg.nodeLimit || 100
+    lastPost = performance.now()
+    cleanup('running')
+    intervalId = self.setInterval(tick, 0)
   } catch (err) {
-    post({ state: msg.savedState!, completed: false, paused: false, err: err })
-    cleanup('idle');
+    post({
+      state: msg.savedState ?? { inEdges: [], outEdges: [], unfinished: [] },
+      completed: false,
+      paused: false,
+      err: err instanceof Error ? err.message : String(err),
+    })
+    cleanup('idle')
   }
 })

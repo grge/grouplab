@@ -16,9 +16,9 @@ export const useGroup = defineStore('group', () => {
     })
   })
 
-  function setGroup(generators: string[], relations: string[]) {
-    generators.value = generators
-    relations.value = relations
+  function setGroup(newGenerators: string[], newRelations: string[]) {
+    generators.value = newGenerators
+    relations.value = newRelations
   }
 
   const subgroupGenerators = ref<string[]>([])

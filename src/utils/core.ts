@@ -23,8 +23,8 @@ export class PresentationGroup {
 }
 
 export interface GraphState {
-  inEdges: Array<[string, Record<string,string>]>,
-  outEdges: Array<[string, Record<string,string>]>,
+  inEdges: Array<[string, Record<string, string>]>,
+  outEdges: Array<[string, Record<string, string>]>,
   unfinished: string[],
 }
 
@@ -50,8 +50,10 @@ export class GraphBuilder {
     } else {
       this.ensure("");
       this.unfinished = [""];
-      for (const w in subgroupGenerators) {
-        let c=""; for (const g of w) c=this.define(c,g); this.merge(c,"");
+      for (const w of subgroupGenerators) {
+        let c = "";
+        for (const g of w) c = this.define(c, g);
+        this.merge(c, "");
       }
     }
   }
@@ -70,7 +72,15 @@ export class GraphBuilder {
     return this.unfinished.length>0;
   }
 
-  run(max=Infinity){let s=0; while(s<max && this.step()) ++s; return this.unfinished.length;}
+  run(max = Infinity) {
+    let s = 0;
+    while (s < max && this.step()) ++s;
+    return this.unfinished.length;
+  }
+
+  get isFinished(): boolean {
+    return this.unfinished.length === 0;
+  }
 
   exportState(): GraphState {
     return {
@@ -79,7 +89,9 @@ export class GraphBuilder {
       unfinished:[...this.unfinished],
     };
   }
-  static importState(pg:PresentationGroup,g:subgroupGenerators, state:GraphState){return new GraphBuilder(pg,g,state);}
+  static importState(pg: PresentationGroup, subgroupGenerators: string[], state: GraphState) {
+    return new GraphBuilder(pg, subgroupGenerators, state);
+  }
 
   /*────────── internals ─────────*/
   private ensure(n:string){ if(!this.outEdges.has(n)){ this.outEdges.set(n,new Map()); this.inEdges.set(n,new Map()); }}
