@@ -1,22 +1,16 @@
 import type { GraphState, GraphViewState } from '@/groups/types'
 import type { PresentationGroup } from '@/groups/presentation'
-import { CayleyGraphKernel } from '@/groups/kernel'
+import { SchreierGraphKernel } from '@/groups/kernel'
 
 export class GraphBuilder {
   readonly G: PresentationGroup
-  readonly kernel: CayleyGraphKernel
+  readonly kernel: SchreierGraphKernel
   private subgroupGenerators: string[]
 
   constructor(group: PresentationGroup, subgroupGenerators: string[] = [], resume?: GraphState) {
     this.G = group
     this.subgroupGenerators = subgroupGenerators
-    this.kernel = new CayleyGraphKernel(group.generators, resume)
-
-    if (!resume) {
-      for (const subgen of subgroupGenerators) {
-        this.kernel.traceLoop(0, subgen)
-      }
-    }
+    this.kernel = new SchreierGraphKernel(group.generators, resume, subgroupGenerators)
   }
 
   get isFinished(): boolean {

@@ -2,7 +2,7 @@ import type { GraphState, GraphViewState } from '@/groups/types'
 
 const inverse = (g: string) => (g === g.toUpperCase() ? g.toLowerCase() : g.toUpperCase())
 
-export class CayleyGraphKernel {
+export class SchreierGraphKernel {
   readonly generators: string[]
   nodeCount: number
   nodeQueue: number[]
@@ -10,7 +10,7 @@ export class CayleyGraphKernel {
   out: Record<string, Array<number | null>>
   in: Record<string, Array<number | null>>
 
-  constructor(generators: string[], resume?: GraphState) {
+  constructor(generators: string[], resume?: GraphState, subgroupGenerators: string[] = []) {
     if (resume) {
       this.generators = [...resume.generators]
       this.nodeCount = resume.nodeCount
@@ -32,6 +32,10 @@ export class CayleyGraphKernel {
     this.out = Object.fromEntries(this.generators.map((g) => [g, []]))
     this.in = Object.fromEntries(this.generators.map((g) => [g, []]))
     this.addNode()
+
+    for (const subgen of subgroupGenerators) {
+      this.traceLoop(0, subgen)
+    }
   }
 
   order(): number {
