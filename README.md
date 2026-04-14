@@ -1,21 +1,32 @@
 # grouplab
 
-Visualise groups given by generators and relations in your browser!
+[![CI](https://github.com/grge/grouplab/actions/workflows/ci.yml/badge.svg)](https://github.com/grge/grouplab/actions/workflows/ci.yml)
+[![Deploy Pages](https://github.com/grge/grouplab/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/grge/grouplab/actions/workflows/deploy-pages.yml)
 
-This project was put together in an afternoon by porting my Todd-Coxeter python code into javascript, and stitching things together with Vue.js. It was meant as a demo, but perhaps I will revisit it and add more features in the future.
+Grouplab is a small browser-based tool for exploring groups given by generators and relations. It builds and visualises Cayley- and Schreier-style graph structures directly in the browser, with the current implementation focused on finite examples that can be explored incrementally.
 
-**[Demo](https://grge.github.io/grouplab/)**
+**Live site:** <https://grge.github.io/grouplab/>
 
-## Things:
-* The graph currently pauses at about 100 nodes, and you can incrementally increase the limit by hitting the pause button.
-* The presentation only works for relators currently.
-* All the code is there to do coset enumeration for a subgroup given by generators. I just need to add UI.
-* After that, some other features I would like to add are:
-  * A nice parser for better relation input, including proper relations, powers, commutators.
-  * Maybe even typing known groups.
-  * Smarter graph layout
-  * Have a list of known groups somewhere.
-  * Finding low index subgroups in the background.
-  * Interact the graph to do coset enumeration by a subset of nodes, or quotient groups.
+## Roadmap
 
+- Improve presentation input with a proper parser for powers, commutators, and equalities
+- Expose subgroup generation and coset enumeration more directly in the UI
+- Refactor the core around the newer `groups` framework design
+- Improve graph layout and interaction for larger examples
+- Add a small library of built-in example groups
 
+## Current shortcomings
+
+- Input is still fairly raw and mostly oriented around relator-style strings
+- Large graphs are not handled especially gracefully yet; the build pauses and layout quality degrades
+- Subgroup and low-index subgroup features are not yet surfaced cleanly in the interface
+- The computational core is still in the middle of a cleanup/refactor cycle
+
+## Development
+
+```bash
+npm install
+npm run type-check
+npm run build
+npm run dev
+```

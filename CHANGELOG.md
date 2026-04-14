@@ -24,6 +24,7 @@ but this project uses date-based entries rather than semantic-versioned releases
 - Updated Vite configuration to use a cleaner mode-based `base` setting for production builds.
 - Switched deployment from the old `gh-pages` branch workflow to GitHub Actions-based Pages deployment.
 - Removed unused framework/dependency scaffolding from `package.json` by dropping `elkjs`, `tailwindcss`, and the old `gh-pages` CLI deploy path.
+- Rewrote the README to give the project a clearer description, roadmap, shortcomings list, and workflow badges.
 
 ### Fixed
 - Fixed the subgroup initialisation loop in `src/utils/core.ts` by iterating over subgroup generator values rather than array indices.
